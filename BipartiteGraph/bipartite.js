@@ -3,12 +3,130 @@
 // load the data
 d3.json("newsAPI-paired-counts.json", function (error, graph) {
     // d3.json("sankeygreenhouse.json", function (error, graph) {
-    console.log(graph.nodes);
+    const groupASubGroup = []; 
+    
+    
+
+    console.log(graph.links);
+    graph.nodes.push({"id": "CULTURAL MINORITIES", "group": 1},
+    {"id": "GENDER AND SEXUALITY", "group": 2},
+    {"id": "AGE", "group": 3},
+    {"id": "SOCIOECONOMIC STATUS", "group": 4},
+    {"id": "HEALTH STATUS", "group":5},
+    {"id": "INSTITUTIONALISED PEOPLE", "group": 6},
+    {"id": "OTHER", "group": 7},
+    );
+    
+
+    var result = [];
+    graph.links.reduce(function(res, val) {
+      if (!res[val.source]) {
+        res[val.source] = { source: val.source, value: 0 };
+        result.push(res[val.source])
+      }
+      res[val.source].value += val.value;
+      return res;
+    }, {});
+    console.log(result);
+
+    
+
+    // graph.links.push({"source": "CULTURAL MINORITIES", "target": 0}
+    // );
+
+    const resultGroup = result.map((item, i) => Object.assign({}, item, graph.nodes[i]));
+    resultGroup.forEach(d => {
+        if (d.group == 1){
+            graph.links.push({"source": "CULTURAL MINORITIES", "target": d.source, "value": d.value})
+        }
+        else if (d.group == 2){
+            graph.links.push({"source": "GENDER AND SEXUALITY", "target": d.source, "value": d.value})
+        }
+        else if (d.group == 3){
+            graph.links.push({"source": "AGE", "target": d.source, "value": d.value})
+        }
+        else if (d.group == 4){
+            graph.links.push({"source": "SOCIOECONOMIC STATUS", "target": d.source, "value": d.value})
+        }
+        else if (d.group == 5){
+            graph.links.push({"source": "HEALTH STATUS", "target": d.source, "value": d.value})
+        }
+        else if (d.group == 6){
+            graph.links.push({"source": "INSTITUTIONALISED PEOPLE", "target": d.source, "value": d.value})
+        }
+        else if(d.group == 7) {
+            graph.links.push({"source": "OTHER", "target": d.source, "value": d.value})
+        }
+        
+    })
+    
+
+
+    function FindSubGroup(target){
+        groupASubGroup.length = 0 ;
+          graph.nodes.forEach(d =>{
+              if (target == d.id){
+                groupASubGroup.push(d.group)
+                  graph.nodes.forEach(j =>{
+                      if (j.group == d.group){
+                        groupASubGroup.push(j.id)
+                      }
+                  })
+              }
+              else{
+                  console.log("not equal")
+              }
+          })
+          console.log(groupASubGroup)
+    }
+
+    // FindSubGroup("CULTURAL MINORITIES");
+   
+
+    const update = () => {
+    
+    var node = graph.nodes.filter(function(d){if(d.group == groupASubGroup[0] || d.group == 8) {return d;}})
+    console.log(graph.nodes)
+    var link = graph.links.filter(function(d){if(
+        groupASubGroup.includes(d.source)
+        // d.source == "CULTURAL MINORITIES" || d.source == "First Nations" || d.source == "Migrants and refugees" || d.source == "Racial minorities" || d.source == "Religious minorities"
+        ) {return d;}});
+    
+        var selectNoMean = [];
+        link.reduce(function(res, val) {
+          if (!res[val.target]) {
+            res[val.target] = { target: val.target, value: 0 };
+            selectNoMean.push(res[val.target])
+          }
+          res[val.target].value += val.value;
+          return res;
+        }, {});
+        console.log(selectNoMean);
+
+        const noMeanValue = [];
+
+        selectNoMean.forEach(d =>{
+            if(d.value < 10000){
+            noMeanValue.push(d.target)
+            }    
+        })
+     
+        noMeanValue.forEach(d =>{
+            node  = node.filter((j) => {
+                return j.id  != d
+            })
+
+            link = link.filter((j) => {
+                return j.target  != d
+            })
+        })
+
+
 
     // array.filter("First Nations".index, graph)
     var nodeMap = {};
-    graph.nodes.forEach(function (x) { nodeMap[x.id] = x; });
-    graph.links = graph.links.map(function (x) {
+    node.forEach(function (x) { nodeMap[x.id] = x; });
+    link = link.map(function (x) {
         return {
             source: nodeMap[x.source],
             target: nodeMap[x.target],
@@ -17,13 +135,13 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
     });
 
     sankey
-        .nodes(graph.nodes)
-        .links(graph.links)
+        .nodes(node)
+        .links(link)
         .layout(32);
 
     // add in the links
     var link = svg.append("g").selectAll(".link")
-        .data(graph.links)
+        .data(link)
         .enter().append("path")
         .attr("class", "link")
         .attr("d", path)
@@ -41,7 +159,7 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
 
     // add in the nodes
     var node = svg.append("g").selectAll(".node")
-        .data(graph.nodes)
+        .data(node)
         .enter().append("g")
         .attr("class", "node")
         .attr("transform", function (d) {
@@ -83,6 +201,8 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
         .attr("x", 6 + sankey.nodeWidth())
         .attr("text-anchor", "start");
 
+  
+
     // the function for moving the nodes
     function dragmove(d) {
         d3.select(this).attr("transform",
@@ -94,11 +214,23 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
         sankey.relayout();
         link.attr("d", path);
     }
+
+}
+
+    FindSubGroup('GENDER AND SEXUALITY');
+    update();
+
+    var btn1 = document.getElementById("group");
+    btn1.addEventListener('change', function() {
+        groupASubGroup.length = 0;
+        svg.selectAll("*").remove();
+        FindSubGroup(this.value);
+        console.log(groupASubGroup)
+        update();
+      },true);
+
+     
 });
-
-
-
-
 
 
 
@@ -396,3 +528,9 @@ d3.sankey = function () {
 
     return sankey;
 };
+
+d3.select("group").on("change", ({ target }) => {
+    setGroup(target.value);
+    update();
+  });
+

@@ -4,8 +4,22 @@
 <link rel="stylesheet" href="bipartite.css">
 
 <body>
+    
+    <fieldset>
+        <legend>Categories</legend>
+        <select name="group" id="group" class="button">
+          <option value="CULTURAL MINORITIES">CULTURAL MINORITIES</option>
+          <option value="GENDER AND SEXUALITY">GENDER AND SEXUALITY</option>
+          <option value="AGE">AGE</option>
+          <option value="SOCIOECONOMIC STATUS">SOCIOECONOMIC STATUS</option>
+          <option value="HEALTH STATUS">HEALTH STATUS</option>
+          <option value="INSTITUTIONALISED PEOPLE">INSTITUTIONALISED PEOPLE</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </fieldset>
 
     <p id="chart">
+    
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
         <script src="bipartite.js"></script>
@@ -14,7 +28,7 @@
 
             var margin = { top: 10, right: 10, bottom: 10, left: 10 },
                 width = 1200 - margin.left - margin.right,
-                height = 1140 - margin.top - margin.bottom;
+                height = 1040 - margin.top - margin.bottom;
 
             var formatNumber = d3.format(",.0f"),    // zero decimal places
                 format = function (d) { return formatNumber(d) + " " + units; },
