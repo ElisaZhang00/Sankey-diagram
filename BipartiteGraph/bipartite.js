@@ -4,7 +4,7 @@
 d3.json("newsAPI-paired-counts.json", function (error, graph) {
     // d3.json("sankeygreenhouse.json", function (error, graph) {
     const groupASubGroup = []; 
-    
+    const noMeanValue = [];
     
 
     console.log(graph.links);
@@ -85,12 +85,18 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
 
     const update = () => {
     
+    if(groupASubGroup.length >0){
     var node = graph.nodes.filter(function(d){if(d.group == groupASubGroup[0] || d.group == 8) {return d;}})
     console.log(graph.nodes)
-    var link = graph.links.filter(function(d){if(
+    link = graph.links.filter(function(d){if(
         groupASubGroup.includes(d.source)
         // d.source == "CULTURAL MINORITIES" || d.source == "First Nations" || d.source == "Migrants and refugees" || d.source == "Racial minorities" || d.source == "Religious minorities"
         ) {return d;}});
+    }
+    else{
+        node = graph.nodes;
+        link = graph.links;
+}
     
         var selectNoMean = [];
         link.reduce(function(res, val) {
@@ -103,14 +109,16 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
         }, {});
         console.log(selectNoMean);
 
-        const noMeanValue = [];
+    
 
         selectNoMean.forEach(d =>{
-            if(d.value < 10000){
+            if(d.value < 5000 && !groupASubGroup.includes(d.target)){
             noMeanValue.push(d.target)
             }    
         })
      
+        console.log(noMeanValue)
+        console.log(link)
         noMeanValue.forEach(d =>{
             node  = node.filter((j) => {
                 return j.id  != d
@@ -217,12 +225,13 @@ d3.json("newsAPI-paired-counts.json", function (error, graph) {
 
 }
 
-    FindSubGroup('GENDER AND SEXUALITY');
+    // FindSubGroup('GENDER AND SEXUALITY');
     update();
 
     var btn1 = document.getElementById("group");
     btn1.addEventListener('change', function() {
         groupASubGroup.length = 0;
+        noMeanValue.length = 0;
         svg.selectAll("*").remove();
         FindSubGroup(this.value);
         console.log(groupASubGroup)
